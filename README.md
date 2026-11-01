@@ -4,7 +4,7 @@
 
 **Heizungszentrale für Home Assistant** — lokal, herstellerunabhängige `climate`-Grundsteuerung und Sonoff-TRVZB-Erweiterungen über Zigbee2MQTT. Eigenes Admin-Dashboard in der Seitenleiste. Keine Cloud und keine weiteren Python-Pakete erforderlich.
 
-> **Version 0.3.0-beta.9 — öffentlich testbare Entwicklungsversion.** Die Python-Logiktests und JavaScript-Syntaxprüfungen laufen lokal. Ein vollständiger Integrationstest in einer realen Home-Assistant-Installation und mit echten Thermostaten wurde **noch nicht** durchgeführt. Zunächst nur **einen Raum** ausprobieren und Home Assistant vorher sichern. Keine zertifizierte Kessel-/Frostschutzsteuerung.
+> **Version 0.3.0-beta.10 — öffentlich testbare Entwicklungsversion.** Die Python-Logiktests und JavaScript-Syntaxprüfungen laufen lokal. Ein vollständiger Integrationstest in einer realen Home-Assistant-Installation und mit echten Thermostaten wurde **noch nicht** durchgeführt. Zunächst nur **einen Raum** ausprobieren und Home Assistant vorher sichern. Keine zertifizierte Kessel-/Frostschutzsteuerung.
 
 ## Installation über HACS
 
