@@ -198,6 +198,13 @@ class HeatingManager:
             if mode_entity:
                 await self._sensor_mode(mode_entity, False)
             return
+        # The Sonoff input supports 0..99.9 C. Never write out-of-range
+        # measurements, and do not select remote mode unless a recent value
+        # has actually been sent successfully.
+        if value < 0 or value > 99.9:
+            if mode_entity:
+                await self._sensor_mode(mode_entity, False)
+            return
         if number_entity:
             key = "external:" + number_entity
             previous = self._last_external_value.get(key)
@@ -209,9 +216,12 @@ class HeatingManager:
                 if ok:
                     self._last_remote_sync[key] = time.monotonic()
                     self._last_external_value[key] = value
-        # A remote-mode TRV without a writable number input could be left
-        # using stale measurements. Never switch to remote in that case.
-        if mode_entity and number_entity:
+                elif time.monotonic() - self._last_remote_sync.get(key, -1e9) > SYNC_SECONDS * 2:
+                    if mode_entity:
+                        await self._sensor_mode(mode_entity, False)
+                    return
+        # Never select an external sensor which we have not written successfully.
+        if mode_entity and number_entity and self._last_remote_sync.get("external:" + number_entity):
             await self._sensor_mode(mode_entity, True)
 
     async def _sensor_mode(self, entity: str, remote: bool) -> None:
