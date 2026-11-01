@@ -227,7 +227,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             frontend_url_path=DOMAIN,
             sidebar_title="Heating Center",
             sidebar_icon="mdi:radiator",
-            module_url=f"/heating_center_assets/heating-center-panel-v8.js?v={PANEL_VERSION}",
+            module_url=f"/heating_center_assets/heating-center-panel-v9.js?v={PANEL_VERSION}",
             embed_iframe=False,
             require_admin=True,
         )
