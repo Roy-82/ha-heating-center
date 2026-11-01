@@ -13,7 +13,7 @@ from .advanced import AdvancedHeatingManager as HeatingManager
 
 _LOGGER = logging.getLogger(__name__)
 
-PANEL_VERSION = "0.3.0-beta.6"
+PANEL_VERSION = "0.3.0-beta.7"
 
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
@@ -118,6 +118,11 @@ async def ws_execute(hass, connection, msg):
         return
     try:
         await _execute_panel_action(manager, msg["action"], msg["data"])
+        snapshot = manager.snapshot()
+        if msg["action"] == "add_room":
+            room_id = str(msg["data"]["room"]["id"]).strip()
+            if room_id not in snapshot.get("rooms", {}):
+                raise ValueError("Raum wurde nicht in die Raumliste übernommen")
     except (ValueError, vol.Invalid) as err:
         connection.send_error(msg["id"], "invalid_request", str(err))
         return
@@ -127,7 +132,12 @@ async def ws_execute(hass, connection, msg):
             msg["id"], "action_failed", "Speichern fehlgeschlagen; Details im HA-Protokoll"
         )
         return
-    connection.send_result(msg["id"], {"ok": True})
+    connection.send_result(
+        msg["id"],
+        {"ok": True, "snapshot": snapshot,
+         "rooms_count": len(snapshot.get("rooms", {})),
+         "saved_room_id": msg["data"]["room"]["id"] if msg["action"] == "add_room" else None},
+    )
 
 
 async def async_setup(hass: HomeAssistant, config: dict) -> bool:
@@ -213,11 +223,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     if not frontend.async_panel_exists(hass, DOMAIN):
         await panel_custom.async_register_panel(
             hass,
-            webcomponent_name="heating-center-panel-v6",
+            webcomponent_name="heating-center-panel-v7",
             frontend_url_path=DOMAIN,
             sidebar_title="Heating Center",
             sidebar_icon="mdi:radiator",
-            module_url=f"/heating_center_assets/heating-center-panel-v6.js?v={PANEL_VERSION}",
+            module_url=f"/heating_center_assets/heating-center-panel-v7.js?v={PANEL_VERSION}",
             embed_iframe=False,
             require_admin=True,
         )
