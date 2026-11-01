@@ -1,5 +1,6 @@
 /* HA Heating Center administration panel — vanilla web component, no CDN. */
 const DOW = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"];
+const PANEL_FRONTEND_VERSION = "0.3.0-beta.5";
 const safe = (v) => String(v ?? "").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#39;");
 const mapping = (map) => Object.entries(map || {}).map(([a,b]) => `${a} = ${b}`).join("\n");
 const parseMapping = (text) => Object.fromEntries(text.split("\n").map(s=>s.split("=").map(x=>x?.trim())).filter(x=>x.length===2&&x[0]&&x[1]));
@@ -55,8 +56,25 @@ class HeatingCenterPanel extends HTMLElement {
       return true;
     } catch(error) {
       this._busy = false;
-      this._error = error.message || String(error);
-      this._render();
+      const code = error?.code ?? error?.status ?? "";
+      const message = error?.message || String(error);
+      const forbidden = /403|forbidden|unauthorized/i.test(String(code) + " " + message);
+      this._error = "Speichern (" + action + ") fehlgeschlagen: " + (code ? code + ": " : "") + message
+        + (forbidden ? ". Berechtigung verweigert oder veraltete Oberfläche. Prüfe die angezeigte Frontend-Version und das HA-Protokoll." : "");
+      // Do not rerender the form on failure: unsaved room settings must survive.
+      const form = this.shadowRoot.querySelector("#room-form, #settings-form");
+      if (form) {
+        let alert = form.querySelector(".hc-save-error");
+        if (!alert) {
+          alert = document.createElement("div");
+          alert.className = "error hc-save-error";
+          alert.setAttribute("role", "alert");
+          form.prepend(alert);
+        }
+        alert.textContent = this._error;
+      } else {
+        this._render();
+      }
       return false;
     }
   }
@@ -340,7 +358,7 @@ class HeatingCenterPanel extends HTMLElement {
       .hc-autofill{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:0 0 16px}.hc-autofill small{max-width:500px}.hc-field-heading{display:flex;align-items:center;gap:7px;justify-content:flex-start}.hc-help{width:21px;min-width:21px;height:21px;padding:0;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-weight:bold;font-size:12px;background:var(--secondary-background-color,#e9edf2);color:var(--primary-text-color,#24303a);border:1px solid var(--divider-color,#c6cdd5)}.editor .checkboxes{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px 18px}.editor .checkboxes label,.editor label.hc-checkbox{display:flex;flex-direction:row;align-items:center;justify-content:flex-start;gap:10px;line-height:1.35;margin:0;min-width:0}.editor input[type=checkbox]{width:18px!important;min-width:18px;max-width:18px;height:18px;flex:none;margin:0}.editor .hc-checkbox .hc-help{margin-left:auto;flex:none}#hc-help-dialog{border:1px solid var(--divider-color,#ccd4dd);border-radius:15px;max-width:460px;width:calc(100% - 32px);padding:22px;background:var(--card-background-color,#fff);color:var(--primary-text-color,#222);box-shadow:0 14px 55px #0004}#hc-help-dialog::backdrop{background:#0007}#hc-help-dialog p{font-size:15px;line-height:1.55}
       @media(max-width:650px){main{padding:12px}.summary{grid-template-columns:1fr 1fr 1fr;gap:6px}.summary article{padding:10px}.summary strong{font-size:20px}.roomhead{align-items:flex-start}.chip{white-space:normal}}
     </style>
-    <main><header><div><h1>🔥 HA Heating Center <small>β</small></h1><small>Lokale Heizungsregelung · ${safe(this.data.version)}</small></div><div class="controls"><button class="secondary" data-act="refresh">Aktualisieren</button><button data-act="new">+ Raum hinzufügen</button></div></header>
+    <main><header><div><h1>🔥 HA Heating Center <small>β</small></h1><small>Lokale Heizungsregelung · Backend ${safe(this.data.version)} · Oberfläche ${PANEL_FRONTEND_VERSION} · Speichern über WebSocket</small></div><div class="controls"><button class="secondary" data-act="refresh">Aktualisieren</button><button data-act="new">+ Raum hinzufügen</button></div></header>
     ${this._error?`<div class="error">${safe(this._error)}</div>`:''}
     <section class="summary"><article><small>Räume aktiv</small><strong>${countOn} / ${rooms.length}</strong></article><article><small>Hinweise</small><strong>${warnings}</strong></article><article><small>Hausmodus</small><select id="housemode"><option value="home" ${this.data.mode==='home'?'selected':''}>Zuhause</option><option value="away" ${this.data.mode==='away'?'selected':''}>Abwesend</option><option value="vacation" ${this.data.mode==='vacation'?'selected':''}>Urlaub</option></select></article></section>
     <div class="tabs"><button class="secondary" data-act="tab" data-tab="rooms">Räume & Gruppen</button><button class="secondary" data-act="tab" data-tab="diagnostics">Diagnose & Verlauf</button><button class="secondary" data-act="settings">Systemeinstellungen</button></div>
