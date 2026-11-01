@@ -1,6 +1,7 @@
 """HA Heating Center: HACS custom integration and administration panel."""
 from __future__ import annotations
 from pathlib import Path
+import logging
 import voluptuous as vol
 from homeassistant.components import frontend, panel_custom, websocket_api
 from homeassistant.components.http import StaticPathConfig
@@ -9,6 +10,8 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.helpers import config_validation as cv
 from .const import DOMAIN
 from .advanced import AdvancedHeatingManager as HeatingManager
+
+_LOGGER = logging.getLogger(__name__)
 
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
@@ -20,16 +23,25 @@ def _get_manager(hass: HomeAssistant, entry_id: str) -> HeatingManager:
     return manager
 
 
+@websocket_api.require_admin
 @websocket_api.websocket_command({vol.Required("type"): "heating_center/get"})
 @websocket_api.async_response
 async def ws_get(hass, connection, msg):
-    connection.require_admin()
     managers = hass.data.get(DOMAIN, {})
     if not managers:
         connection.send_error(msg["id"], "not_ready", "Heating Center noch nicht geladen")
         return
     manager = next(iter(managers.values()))
-    connection.send_result(msg["id"], manager.snapshot())
+    try:
+        snapshot = manager.snapshot()
+    except Exception:
+        _LOGGER.exception("Failed to build Heating Center dashboard snapshot")
+        connection.send_error(
+            msg["id"], "snapshot_failed",
+            "Heating-Center-Daten konnten nicht geladen werden; bitte HA-Protokoll pruefen",
+        )
+        return
+    connection.send_result(msg["id"], snapshot)
 
 
 async def async_setup(hass: HomeAssistant, config: dict) -> bool:
