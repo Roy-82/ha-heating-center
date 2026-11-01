@@ -312,7 +312,7 @@ class AdvancedHeatingManager(HeatingManager):
 
     def snapshot(self):
         data=super().snapshot()
-        data['version']='0.3.0-beta.5'
+        data['version']='0.3.0-beta.6'
         data['settings']=deepcopy(self.settings)
         data['profiles']={rid:room.get('profiles',DEFAULT_PROFILES) for rid,room in self.rooms.items()}
         data['history']={rid:rows[-160:] for rid,rows in self.history.items()}
