@@ -49,7 +49,7 @@ class HeatingCenterPanel extends HTMLElement {
     if (!this.data || this._busy) return;
     this._busy = true;
     try {
-      await this._hass.callService("heating_center", action, {config_entry_id:this.data.entry_id, ...values});
+      await this._hass.callWS({type:"heating_center/execute", config_entry_id:this.data.entry_id, action, data:values});
       this._busy = false;
       await this._refresh();
       return true;
