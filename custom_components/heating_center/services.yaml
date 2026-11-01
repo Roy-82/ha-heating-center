@@ -1,0 +1,92 @@
+add_room:
+  name: Raum anlegen oder ändern
+  fields:
+    config_entry_id:
+      required: true
+      selector: {text: {}}
+    room:
+      required: true
+      selector: {object: {}}
+remove_room:
+  name: Raum entfernen
+  fields:
+    config_entry_id:
+      required: true
+      selector: {text: {}}
+    room_id:
+      required: true
+      selector: {text: {}}
+set_room_temperature:
+  name: Autorisierte Raumtemperatur setzen
+  fields:
+    config_entry_id:
+      required: true
+      selector: {text: {}}
+    room_id:
+      required: true
+      selector: {text: {}}
+    temperature:
+      required: true
+      selector: {number: {min: 5, max: 30, step: 0.5, mode: box}}
+    minutes:
+      selector: {number: {min: 0, max: 1440, mode: box}}
+set_mode:
+  name: Hausmodus setzen
+  fields:
+    config_entry_id:
+      required: true
+      selector: {text: {}}
+    mode:
+      required: true
+      selector:
+        select:
+          options: [home, away, vacation]
+set_group_temperature:
+  name: Gruppe einstellen
+  fields:
+    config_entry_id:
+      required: true
+      selector: {text: {}}
+    group:
+      required: true
+      selector: {text: {}}
+    temperature:
+      required: true
+      selector: {number: {min: 5, max: 30, step: 0.5, mode: box}}
+    minutes:
+      selector: {number: {min: 0, max: 1440, mode: box}}
+
+set_settings:
+  name: Allgemeine Einstellungen aktualisieren
+  fields:
+    config_entry_id:
+      required: true
+      selector: {text: {}}
+    settings:
+      required: true
+      selector: {object: {}}
+apply_profile:
+  name: Raumprofil aktivieren
+  fields:
+    config_entry_id:
+      required: true
+      selector: {text: {}}
+    room_id:
+      required: true
+      selector: {text: {}}
+    profile:
+      required: true
+      selector:
+        select:
+          options: [comfort, eco, night, boost]
+    minutes:
+      selector: {number: {min: 0, max: 1440, mode: box}}
+export_schedule:
+  name: Sonoff Wochenplan ausdrücklich exportieren
+  fields:
+    config_entry_id:
+      required: true
+      selector: {text: {}}
+    room_id:
+      required: true
+      selector: {text: {}}

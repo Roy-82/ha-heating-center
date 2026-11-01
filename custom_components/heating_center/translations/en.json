@@ -1,0 +1,7 @@
+{
+  "title": "HA Heating Center",
+  "config": {
+    "step": {"user": {"title": "Set up HA Heating Center", "description": "Configure rooms from the new sidebar panel."}},
+    "abort": {"single_instance_allowed": "The heating center is already configured."}
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "name": "HA Heating Center",
+  "content_in_root": false,
+  "render_readme": true,
+  "homeassistant": "2025.12.0"
+}

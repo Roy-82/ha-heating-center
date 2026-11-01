@@ -1,0 +1,7 @@
+{
+  "title": "HA Heating Center",
+  "config": {
+    "step": {"user": {"title": "HA Heating Center einrichten", "description": "Die Räume werden anschließend über die neue Seitenleiste eingerichtet."}},
+    "abort": {"single_instance_allowed": "Die Heizungszentrale ist bereits eingerichtet."}
+  }
+}
