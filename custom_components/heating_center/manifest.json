@@ -1,7 +1,7 @@
 {
   "domain": "heating_center",
   "name": "HA Heating Center",
-  "version": "0.3.0-beta.4",
+  "version": "0.3.0-beta.5",
   "documentation": "https://github.com/Roy-82/ha-heating-center",
   "issue_tracker": "https://github.com/Roy-82/ha-heating-center/issues",
   "codeowners": [
