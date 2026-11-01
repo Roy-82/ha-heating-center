@@ -13,6 +13,8 @@ from .advanced import AdvancedHeatingManager as HeatingManager
 
 _LOGGER = logging.getLogger(__name__)
 
+PANEL_VERSION = "0.3.0-beta.5"
+
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
 
@@ -41,6 +43,8 @@ async def ws_get(hass, connection, msg):
             "Heating-Center-Daten konnten nicht geladen werden; bitte HA-Protokoll pruefen",
         )
         return
+    snapshot["panel_backend_version"] = PANEL_VERSION
+    snapshot["session_admin"] = bool(connection.user and connection.user.is_admin)
     connection.send_result(msg["id"], snapshot)
 
 
@@ -107,6 +111,7 @@ async def _execute_panel_action(manager: HeatingManager, action: str, data: dict
 @websocket_api.async_response
 async def ws_execute(hass, connection, msg):
     """Apply dashboard changes for authenticated Home Assistant administrators."""
+    _LOGGER.debug("Heating Center WebSocket action requested: %s", msg["action"])
     manager = hass.data.get(DOMAIN, {}).get(msg["config_entry_id"])
     if manager is None:
         connection.send_error(msg["id"], "not_found", "Heating Center ist nicht geladen")
@@ -212,7 +217,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             frontend_url_path=DOMAIN,
             sidebar_title="Heating Center",
             sidebar_icon="mdi:radiator",
-            module_url="/heating_center/heating-center-panel.js",
+            module_url=f"/heating_center/heating-center-panel.js?v={PANEL_VERSION}",
             embed_iframe=False,
             require_admin=True,
         )
