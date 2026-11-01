@@ -13,7 +13,7 @@ from .advanced import AdvancedHeatingManager as HeatingManager
 
 _LOGGER = logging.getLogger(__name__)
 
-PANEL_VERSION = "0.3.0-beta.5"
+PANEL_VERSION = "0.3.0-beta.6"
 
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
@@ -199,7 +199,7 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
     }))
     frontend_dir = Path(__file__).parent / "frontend"
     await hass.http.async_register_static_paths([
-        StaticPathConfig("/heating_center", str(frontend_dir), False)
+        StaticPathConfig("/heating_center_assets", str(frontend_dir), False)
     ])
     return True
 
@@ -213,11 +213,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     if not frontend.async_panel_exists(hass, DOMAIN):
         await panel_custom.async_register_panel(
             hass,
-            webcomponent_name="heating-center-panel",
+            webcomponent_name="heating-center-panel-v6",
             frontend_url_path=DOMAIN,
             sidebar_title="Heating Center",
             sidebar_icon="mdi:radiator",
-            module_url=f"/heating_center/heating-center-panel.js?v={PANEL_VERSION}",
+            module_url=f"/heating_center_assets/heating-center-panel-v6.js?v={PANEL_VERSION}",
             embed_iframe=False,
             require_admin=True,
         )
