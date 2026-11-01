@@ -44,9 +44,91 @@ async def ws_get(hass, connection, msg):
     connection.send_result(msg["id"], snapshot)
 
 
+# Panel writes use the same authenticated WebSocket session as dashboard reads.
+# Keep the original Home Assistant services available to existing automations.
+_WS_ACTION_SCHEMAS = {
+    "add_room": vol.Schema({vol.Required("room"): dict}),
+    "remove_room": vol.Schema({vol.Required("room_id"): cv.string}),
+    "set_room_temperature": vol.Schema({
+        vol.Required("room_id"): cv.string,
+        vol.Required("temperature"): vol.All(vol.Coerce(float), vol.Range(min=4, max=35)),
+        vol.Optional("minutes"): vol.All(vol.Coerce(int), vol.Range(min=0, max=1440)),
+    }),
+    "set_group_temperature": vol.Schema({
+        vol.Required("group"): cv.string,
+        vol.Required("temperature"): vol.All(vol.Coerce(float), vol.Range(min=4, max=35)),
+        vol.Optional("minutes"): vol.All(vol.Coerce(int), vol.Range(min=0, max=1440)),
+    }),
+    "set_mode": vol.Schema({vol.Required("mode"): vol.In(["home", "away", "vacation"])}),
+    "set_settings": vol.Schema({vol.Required("settings"): dict}),
+    "apply_profile": vol.Schema({
+        vol.Required("room_id"): cv.string,
+        vol.Required("profile"): vol.In(["comfort", "eco", "night", "boost"]),
+        vol.Optional("minutes"): vol.All(vol.Coerce(int), vol.Range(min=0, max=1440)),
+    }),
+    "export_schedule": vol.Schema({vol.Required("room_id"): cv.string}),
+}
+
+
+async def _execute_panel_action(manager: HeatingManager, action: str, data: dict) -> None:
+    """Execute only allow-listed Heating Center actions with validated arguments."""
+    values = _WS_ACTION_SCHEMAS[action](data)
+    if action == "add_room":
+        await manager.add_room(values["room"])
+    elif action == "remove_room":
+        await manager.remove_room(values["room_id"])
+    elif action == "set_room_temperature":
+        await manager.set_room_temperature(
+            values["room_id"], values["temperature"], values.get("minutes")
+        )
+    elif action == "set_group_temperature":
+        await manager.set_group_temperature(
+            values["group"], values["temperature"], values.get("minutes")
+        )
+    elif action == "set_mode":
+        await manager.set_mode(values["mode"])
+    elif action == "set_settings":
+        await manager.set_settings(values["settings"])
+    elif action == "apply_profile":
+        await manager.apply_profile(
+            values["room_id"], values["profile"], values.get("minutes", 120)
+        )
+    elif action == "export_schedule":
+        await manager.sync_native_schedule(values["room_id"])
+
+
+@websocket_api.require_admin
+@websocket_api.websocket_command({
+    vol.Required("type"): "heating_center/execute",
+    vol.Required("config_entry_id"): cv.string,
+    vol.Required("action"): vol.In(list(_WS_ACTION_SCHEMAS)),
+    vol.Required("data"): dict,
+})
+@websocket_api.async_response
+async def ws_execute(hass, connection, msg):
+    """Apply dashboard changes for authenticated Home Assistant administrators."""
+    manager = hass.data.get(DOMAIN, {}).get(msg["config_entry_id"])
+    if manager is None:
+        connection.send_error(msg["id"], "not_found", "Heating Center ist nicht geladen")
+        return
+    try:
+        await _execute_panel_action(manager, msg["action"], msg["data"])
+    except (ValueError, vol.Invalid) as err:
+        connection.send_error(msg["id"], "invalid_request", str(err))
+        return
+    except Exception:
+        _LOGGER.exception("Heating Center dashboard action failed: %s", msg["action"])
+        connection.send_error(
+            msg["id"], "action_failed", "Speichern fehlgeschlagen; Details im HA-Protokoll"
+        )
+        return
+    connection.send_result(msg["id"], {"ok": True})
+
+
 async def async_setup(hass: HomeAssistant, config: dict) -> bool:
     hass.data.setdefault(DOMAIN, {})
     websocket_api.async_register_command(hass, ws_get)
+    websocket_api.async_register_command(hass, ws_execute)
 
     async def add_room(call: ServiceCall) -> None:
         await _get_manager(hass, call.data["config_entry_id"]).add_room(call.data["room"])
