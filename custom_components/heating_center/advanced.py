@@ -58,14 +58,22 @@ class AdvancedHeatingManager(HeatingManager):
         await super().async_start()
         self._update_watch()
 
+    def _storage_snapshot(self):
+        """Materialize a consistent, serializable persisted Heating Center state."""
+        return {
+            'rooms': deepcopy(self.rooms), 'mode': self.mode,
+            'settings': deepcopy(self.settings),
+            'history': deepcopy(self.history), 'rates': deepcopy(self._rates),
+            'battery_history': deepcopy(self._battery_history),
+            'previous_mode': self._previous_non_vacation_mode,
+        }
+
     def _save(self):
-        self.store.async_delay_save(lambda: {
-            'rooms':deepcopy(self.rooms), 'mode':self.mode,
-            'settings':deepcopy(self.settings),
-            'history':deepcopy(self.history), 'rates':deepcopy(self._rates),
-            'battery_history':deepcopy(self._battery_history),
-            'previous_mode':self._previous_non_vacation_mode,
-        }, 2)
+        self.store.async_delay_save(self._storage_snapshot, 2)
+
+    async def async_flush(self):
+        """Persist confirmed configuration writes before reporting success."""
+        await self.store.async_save(self._storage_snapshot())
 
     def _update_watch(self):
         super()._update_watch()
@@ -312,7 +320,7 @@ class AdvancedHeatingManager(HeatingManager):
 
     def snapshot(self):
         data=super().snapshot()
-        data['version']='0.3.0-beta.6'
+        data['version']='0.3.0-beta.7'
         data['settings']=deepcopy(self.settings)
         data['profiles']={rid:room.get('profiles',DEFAULT_PROFILES) for rid,room in self.rooms.items()}
         data['history']={rid:rows[-160:] for rid,rows in self.history.items()}
@@ -360,6 +368,8 @@ class AdvancedHeatingManager(HeatingManager):
                    for day,ent in mapping.items()): raise ValueError('Sonoff Zeitpläne benötigen text.* Entitäten')
         self._update_watch()
         self._save()
+        # A room creation/edit must survive a restart and return to the panel immediately.
+        await self.async_flush()
 
     async def set_settings(self,settings):
         if not isinstance(settings,dict): raise ValueError('Einstellungen müssen ein Objekt sein')
