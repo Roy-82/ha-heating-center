@@ -10,10 +10,11 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.helpers import config_validation as cv
 from .const import DOMAIN
 from .advanced import AdvancedHeatingManager as HeatingManager
+from .lovelace_resources import async_register_card_resource
 
 _LOGGER = logging.getLogger(__name__)
 
-PANEL_VERSION = "0.3.0-beta.12"
+PANEL_VERSION = "0.3.0-beta.13"
 
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
@@ -211,6 +212,17 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
     await hass.http.async_register_static_paths([
         StaticPathConfig("/heating_center_assets", str(frontend_dir), False)
     ])
+    # Lovelace is a dependency and is initialized before this integration.
+    # Ensure its stored resources are fully loaded before touching entries.
+    try:
+        await async_register_card_resource(hass, PANEL_VERSION)
+    except Exception:
+        # The heating manager must still start if Lovelace resource storage
+        # cannot be changed, e.g. unavailable / read-only / corrupted storage.
+        _LOGGER.exception(
+            "Heating Center Kartenressource konnte nicht automatisch "
+            "registriert werden; manuelle Installation bleibt möglich"
+        )
     return True
 
 
@@ -223,11 +235,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     if not frontend.async_panel_exists(hass, DOMAIN):
         await panel_custom.async_register_panel(
             hass,
-            webcomponent_name="heating-center-panel-v12",
+            webcomponent_name="heating-center-panel-v13",
             frontend_url_path=DOMAIN,
             sidebar_title="Heating Center",
             sidebar_icon="mdi:home-thermometer",
-            module_url=f"/heating_center_assets/heating-center-panel-v12.js?v={PANEL_VERSION}",
+            module_url=f"/heating_center_assets/heating-center-panel-v13.js?v={PANEL_VERSION}",
             embed_iframe=False,
             require_admin=True,
         )
