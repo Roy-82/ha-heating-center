@@ -13,7 +13,7 @@ from .advanced import AdvancedHeatingManager as HeatingManager
 
 _LOGGER = logging.getLogger(__name__)
 
-PANEL_VERSION = "0.3.0-beta.10"
+PANEL_VERSION = "0.3.0-beta.11"
 
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
@@ -223,11 +223,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     if not frontend.async_panel_exists(hass, DOMAIN):
         await panel_custom.async_register_panel(
             hass,
-            webcomponent_name="heating-center-panel-v10",
+            webcomponent_name="heating-center-panel-v11",
             frontend_url_path=DOMAIN,
             sidebar_title="Heating Center",
-            sidebar_icon="mdi:radiator",
-            module_url=f"/heating_center_assets/heating-center-panel-v10.js?v={PANEL_VERSION}",
+            sidebar_icon="mdi:home-thermometer",
+            module_url=f"/heating_center_assets/heating-center-panel-v11.js?v={PANEL_VERSION}",
             embed_iframe=False,
             require_admin=True,
         )
