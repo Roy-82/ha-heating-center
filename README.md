@@ -6,11 +6,11 @@
 
 **Heizungszentrale für Home Assistant** — lokal, herstellerunabhängige `climate`-Grundsteuerung und Sonoff-TRVZB-Erweiterungen über Zigbee2MQTT. Eigenes Admin-Dashboard in der Seitenleiste. Keine Cloud und keine weiteren Python-Pakete erforderlich.
 
-> **Version 0.3.0-beta.12 — öffentlich testbare Entwicklungsversion.** Die Python-Logiktests und JavaScript-Syntaxprüfungen laufen lokal. Ein vollständiger Integrationstest in einer realen Home-Assistant-Installation und mit echten Thermostaten wurde **noch nicht** durchgeführt. Zunächst nur **einen Raum** ausprobieren und Home Assistant vorher sichern. Keine zertifizierte Kessel-/Frostschutzsteuerung.
+> **Version 0.3.0-beta.13 — öffentlich testbare Entwicklungsversion.** Die Python-Logiktests und JavaScript-Syntaxprüfungen laufen lokal. Ein vollständiger Integrationstest in einer realen Home-Assistant-Installation und mit echten Thermostaten wurde **noch nicht** durchgeführt. Zunächst nur **einen Raum** ausprobieren und Home Assistant vorher sichern. Keine zertifizierte Kessel-/Frostschutzsteuerung.
 
 ## Versionen und Logo
 
-Ab `0.3.0-beta.12` nutzt HA Heating Center benannte GitHub-Releases zur Anzeige der Versionsnummer in HACS. Bei Vorabversionen muss die Berücksichtigung von Pre-Releases in HACS aktiviert sein. Der aktuelle Stand in `main` bleibt weiterhin über `Erneut herunterladen → main` installierbar.
+Ab `0.3.0-beta.13` nutzt HA Heating Center benannte GitHub-Releases zur Anzeige der Versionsnummer in HACS. Bei Vorabversionen muss die Berücksichtigung von Pre-Releases in HACS aktiviert sein. Der aktuelle Stand in `main` bleibt weiterhin über `Erneut herunterladen → main` installierbar.
 
 Das eigene Icon liegt ab Home Assistant 2026.3 unter `custom_components/heating_center/brand/`. Auf GitHub wird dasselbe Motiv im README und in der Heating-Center-Seitenleiste angezeigt.
 
@@ -27,16 +27,34 @@ Zusätzlich zum großen Heizzentrum liefert die Integration die **custom:heating
 
 Pro Raum: Istwert (externer Raumfühler bevorzugt), berechneter Sollwert, Wochenplanstatus, Heizstatus beziehungsweise Wärmebedarf, Warnungen und die Profilknöpfe **Eco / Komfort / Boost**. Standardmäßig werden zehn Räume in zwei Spalten dargestellt. Bei schmalen Dashboard-Spalten schaltet die Darstellung auf eine Spalte um.
 
-### Einmalig JavaScript-Ressource hinzufügen
+### Automatische Ressourcenregistrierung ab Beta.13
 
-Die Karte wird mit der Integration mitgeliefert und lokal bereitgestellt. Home Assistant verlangt für Lovelace-Karten die Registrierung als Dashboard-Ressource. Beta.12 verändert deine bestehenden Lovelace-Ressourcen **nicht automatisch**.
+**Keine manuelle Ressourcenanlage mehr nötig**, wenn du deine Dashboard-Ressourcen normal über Home Assistants Oberfläche verwaltest (Lovelace `resource_mode: storage`, Standard). Nach Installation und einem vollständigen Neustart von Home Assistant:
 
-1. Einstellungen → Dashboards → ⋮ → Ressourcen → Ressource hinzufügen.
-2. URL: /heating_center_assets/heating-center-card.js?v=0.3.0-beta.12
-3. Typ **JavaScript-Modul** (module).
-4. Dashboard neu laden. Bei künftigen Updates die Versionsnummer im ?v=-Parameter erneuern, damit kein altes JavaScript im Cache bleibt.
+- prüft Heating Center die vorhandenen Lovelace-Ressourcen;
+- erstellt seinen JavaScript-Modul-Eintrag, falls er fehlt;
+- aktualisiert bei einem vorhandenen Eintrag ausschließlich seine eigene Versions-URL;
+- lässt alle anderen Lovelace-Karten und Ressourcen unangetastet;
+- erzeugt bei erneutem Start keinen zweiten Eintrag.
 
-Bei resource_mode: yaml muss die Ressource stattdessen in der Lovelace-Konfiguration unter resources eingetragen werden.
+Einträge mit `/heating_center_assets/heating-center-card.js` werden anhand des Pfads erkannt, auch wenn die bisherige `?v=`-Versionsnummer anders lautet. Sind mehrere solche Einträge vorhanden, verändert Heating Center vorsichtshalber keinen davon und schreibt eine Warnung ins HA-Protokoll. Es werden **keine vorhandenen Karten oder Ressourcen gelöscht**.
+
+Die aktuelle automatische Ressourcen-URL lautet:
+`/heating_center_assets/heating-center-card.js?v=0.3.0-beta.13` (Typ JavaScript-Modul).
+
+**Ausnahme YAML-Ressourcenmodus:** Bei `lovelace: resource_mode: yaml` kann und darf die Integration die Liste nicht überschreiben. In diesem Fall manuell in `configuration.yaml` unter `lovelace.resources` eintragen:
+
+~~~yaml
+lovelace:
+  resource_mode: yaml
+  resources:
+    - url: /heating_center_assets/heating-center-card.js?v=0.3.0-beta.13
+      type: module
+~~~
+
+Danach `lovelace.reload_resources` ausführen oder Home Assistant neu starten. Bei Webbrowser-Cacheproblemen einmal das Dashboard hart neu laden (`Strg+F5`).
+
+
 
 ### Einfache Dashboardkarte für alle Räume
 
