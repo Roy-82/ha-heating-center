@@ -6,11 +6,11 @@
 
 **Heizungszentrale für Home Assistant** — lokal, herstellerunabhängige `climate`-Grundsteuerung und Sonoff-TRVZB-Erweiterungen über Zigbee2MQTT. Eigenes Admin-Dashboard in der Seitenleiste. Keine Cloud und keine weiteren Python-Pakete erforderlich.
 
-> **Version 0.3.0-beta.11 — öffentlich testbare Entwicklungsversion.** Die Python-Logiktests und JavaScript-Syntaxprüfungen laufen lokal. Ein vollständiger Integrationstest in einer realen Home-Assistant-Installation und mit echten Thermostaten wurde **noch nicht** durchgeführt. Zunächst nur **einen Raum** ausprobieren und Home Assistant vorher sichern. Keine zertifizierte Kessel-/Frostschutzsteuerung.
+> **Version 0.3.0-beta.12 — öffentlich testbare Entwicklungsversion.** Die Python-Logiktests und JavaScript-Syntaxprüfungen laufen lokal. Ein vollständiger Integrationstest in einer realen Home-Assistant-Installation und mit echten Thermostaten wurde **noch nicht** durchgeführt. Zunächst nur **einen Raum** ausprobieren und Home Assistant vorher sichern. Keine zertifizierte Kessel-/Frostschutzsteuerung.
 
 ## Versionen und Logo
 
-Ab `0.3.0-beta.11` nutzt HA Heating Center benannte GitHub-Releases zur Anzeige der Versionsnummer in HACS. Bei Vorabversionen muss die Berücksichtigung von Pre-Releases in HACS aktiviert sein. Der aktuelle Stand in `main` bleibt weiterhin über `Erneut herunterladen → main` installierbar.
+Ab `0.3.0-beta.12` nutzt HA Heating Center benannte GitHub-Releases zur Anzeige der Versionsnummer in HACS. Bei Vorabversionen muss die Berücksichtigung von Pre-Releases in HACS aktiviert sein. Der aktuelle Stand in `main` bleibt weiterhin über `Erneut herunterladen → main` installierbar.
 
 Das eigene Icon liegt ab Home Assistant 2026.3 unter `custom_components/heating_center/brand/`. Auf GitHub wird dasselbe Motiv im README und in der Heating-Center-Seitenleiste angezeigt.
 
@@ -20,6 +20,53 @@ Das eigene Icon liegt ab Home Assistant 2026.3 unter `custom_components/heating_
 - Gruppen-Eingaben validiert (5–30 °C in 0,5-°C-Schritten).
 - Neues eigenständiges Heating-Center-Logo und HACS-Versionsveröffentlichung.
 - Unveränderte Thermostat-/Zigbee-Steuerlogik.
+
+## Kompakte Lovelace-Karte (Beta.12)
+
+Zusätzlich zum großen Heizzentrum liefert die Integration die **custom:heating-center-card** für bestehende Haus-EG-, Haus-OG- und andere Dashboards. Sie liest alle gespeicherten Räume per lokalem Home-Assistant-WebSocket automatisch aus; keine zweiten Raumlisten oder alten Heizungs-Helfer erforderlich.
+
+Pro Raum: Istwert (externer Raumfühler bevorzugt), berechneter Sollwert, Wochenplanstatus, Heizstatus beziehungsweise Wärmebedarf, Warnungen und die Profilknöpfe **Eco / Komfort / Boost**. Standardmäßig werden zehn Räume in zwei Spalten dargestellt. Bei schmalen Dashboard-Spalten schaltet die Darstellung auf eine Spalte um.
+
+### Einmalig JavaScript-Ressource hinzufügen
+
+Die Karte wird mit der Integration mitgeliefert und lokal bereitgestellt. Home Assistant verlangt für Lovelace-Karten die Registrierung als Dashboard-Ressource. Beta.12 verändert deine bestehenden Lovelace-Ressourcen **nicht automatisch**.
+
+1. Einstellungen → Dashboards → ⋮ → Ressourcen → Ressource hinzufügen.
+2. URL: /heating_center_assets/heating-center-card.js?v=0.3.0-beta.12
+3. Typ **JavaScript-Modul** (module).
+4. Dashboard neu laden. Bei künftigen Updates die Versionsnummer im ?v=-Parameter erneuern, damit kein altes JavaScript im Cache bleibt.
+
+Bei resource_mode: yaml muss die Ressource stattdessen in der Lovelace-Konfiguration unter resources eingetragen werden.
+
+### Einfache Dashboardkarte für alle Räume
+
+~~~yaml
+type: custom:heating-center-card
+title: Heizung
+columns: auto
+~~~
+
+### Nur Erdgeschoss-Räume anzeigen
+
+Optional kann man Räume anhand ihrer im Heizzentrum vergebenen IDs auswählen. Diese Beispiel-IDs bitte mit den tatsächlichen Raum-IDs abgleichen.
+
+~~~yaml
+type: custom:heating-center-card
+title: Heizung EG
+columns: auto
+rooms:
+  - buero
+  - wc
+  - kueche
+  - wohnzimmer
+  - flur_eg
+~~~
+
+Optionen: title (Überschrift), columns (auto, 1, 2), rooms (optionale Raum-ID-Liste in gewünschter Reihenfolge), show_group (false blendet Gruppennamen aus).
+
+**Profile:** Eco und Komfort gelten jeweils 120 Minuten, Boost 30 Minuten. Nur aktivierte Räume lassen sich steuern, und Schreiben erfordert eine angemeldete Administrator-Sitzung. Inaktive Räume bleiben sichtbar. Ein Profilwechsel wird per Heating-Center-WebSocket bestätigt oder mit einer Fehlermeldung angezeigt.
+
+**Status:** „Heizt“ wird nur angezeigt, wenn der Thermostatstatus tatsächlich heating oder heat meldet. Sonst zeigt die Karte, wenn berechnet, „Wärmebedarf“; das ist keine bestätigte reale Ventilöffnung. Nach Änderungen in der Raumverwaltung aktualisiert sich die Karte spätestens nach ungefähr 45 Sekunden.
 
 ## Installation über HACS
 
