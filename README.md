@@ -1,10 +1,25 @@
+<p align="center"><img src="assets/heating-center-logo.svg" width="150" height="150" alt="HA Heating Center Logo"></p>
+
 # HA Heating Center
 
 [![HACS custom repository](https://img.shields.io/badge/HACS-custom%20repository-41BDF5)](https://hacs.xyz/)
 
 **Heizungszentrale für Home Assistant** — lokal, herstellerunabhängige `climate`-Grundsteuerung und Sonoff-TRVZB-Erweiterungen über Zigbee2MQTT. Eigenes Admin-Dashboard in der Seitenleiste. Keine Cloud und keine weiteren Python-Pakete erforderlich.
 
-> **Version 0.3.0-beta.10 — öffentlich testbare Entwicklungsversion.** Die Python-Logiktests und JavaScript-Syntaxprüfungen laufen lokal. Ein vollständiger Integrationstest in einer realen Home-Assistant-Installation und mit echten Thermostaten wurde **noch nicht** durchgeführt. Zunächst nur **einen Raum** ausprobieren und Home Assistant vorher sichern. Keine zertifizierte Kessel-/Frostschutzsteuerung.
+> **Version 0.3.0-beta.11 — öffentlich testbare Entwicklungsversion.** Die Python-Logiktests und JavaScript-Syntaxprüfungen laufen lokal. Ein vollständiger Integrationstest in einer realen Home-Assistant-Installation und mit echten Thermostaten wurde **noch nicht** durchgeführt. Zunächst nur **einen Raum** ausprobieren und Home Assistant vorher sichern. Keine zertifizierte Kessel-/Frostschutzsteuerung.
+
+## Versionen und Logo
+
+Ab `0.3.0-beta.11` nutzt HA Heating Center benannte GitHub-Releases zur Anzeige der Versionsnummer in HACS. Bei Vorabversionen muss die Berücksichtigung von Pre-Releases in HACS aktiviert sein. Der aktuelle Stand in `main` bleibt weiterhin über `Erneut herunterladen → main` installierbar.
+
+Das eigene Icon liegt ab Home Assistant 2026.3 unter `custom_components/heating_center/brand/`. Auf GitHub wird dasselbe Motiv im README und in der Heating-Center-Seitenleiste angezeigt.
+
+### Beta.11
+
+- Gruppen-Solltemperatur lässt sich wieder eingeben: kein Fokusverlust bei HA-Zustandsupdates, Eingaben bleiben erhalten.
+- Gruppen-Eingaben validiert (5–30 °C in 0,5-°C-Schritten).
+- Neues eigenständiges Heating-Center-Logo und HACS-Versionsveröffentlichung.
+- Unveränderte Thermostat-/Zigbee-Steuerlogik.
 
 ## Installation über HACS
 
