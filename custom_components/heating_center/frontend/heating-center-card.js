@@ -1,8 +1,8 @@
-/* HA Heating Center – compact Lovelace card; version 0.3.0-beta.12.
+/* HA Heating Center – compact Lovelace card; version 0.3.0-beta.13.
    No external libraries. Data and permitted actions stay inside HA WebSocket. */
 (() => {
 "use strict";
-const VERSION="0.3.0-beta.12";
+const VERSION="0.3.0-beta.13";
 const esc=v=>String(v??"").replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
 const fmt=v=>v===null||v===undefined||v===""||!Number.isFinite(Number(v))?"–":Number(v).toLocaleString("de-DE",{maximumFractionDigits:1});
 const modes={home:"Zuhause",away:"Abwesend",vacation:"Urlaub"};
@@ -153,7 +153,7 @@ class HeatingCenterCard extends HTMLElement {
    '<button type="button" class="open" data-act="open" aria-label="Heating Center öffnen">Öffnen ↗</button></div>'+
    '<div class="stats"><span><i class="dot"></i><strong>'+esc(active)+'</strong> Räume aktiv</span>'+
    '<span>·</span><span><strong>'+esc(demand)+'</strong> mit Wärmebedarf</span></div>'+
-   msg+content+'<div class="footer"><span>Ist/Soll in °C · Boost 30 Min. · Eco/Komfort 2 Std.</span><span>β12</span></div></div></ha-card>';
+   msg+content+'<div class="footer"><span>Ist/Soll in °C · Boost 30 Min. · Eco/Komfort 2 Std.</span><span>β13</span></div></div></ha-card>';
  }
  async _click(event){
   const el=event.target?.closest?.("button[data-act]");if(!el)return;
