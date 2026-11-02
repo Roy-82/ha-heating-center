@@ -10,7 +10,7 @@ const profiles=[["eco","Eco",120],["comfort","Komfort",120],["boost","Boost",30]
 const CSS=[
 ":host{display:block;min-width:0}*{box-sizing:border-box}",
 "ha-card{display:block;overflow:hidden;background:var(--ha-card-background,var(--card-background-color,#fff));color:var(--primary-text-color,#253244);border-radius:var(--ha-card-border-radius,16px)}",
-".wrap{padding:15px 16px 17px}.head{display:flex;gap:9px;align-items:center;justify-content:space-between;margin-bottom:9px}",
+".wrap{padding:15px 16px 17px;container-type:inline-size}.head{display:flex;gap:9px;align-items:center;justify-content:space-between;margin-bottom:9px}",
 ".brand{display:flex;gap:9px;align-items:center;min-width:0}.brand img{width:36px;height:36px;object-fit:contain;border-radius:10px}",
 ".name{font-weight:750;font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.sub{font-size:11px;color:var(--secondary-text-color,#687889);margin-top:1px}",
 ".open{border:1px solid var(--divider-color,#dce2e9);padding:7px 9px;border-radius:9px;background:transparent;color:var(--primary-text-color,#334);cursor:pointer;white-space:nowrap;font:inherit;font-size:12px}",
@@ -40,6 +40,7 @@ const CSS=[
 ".message.error{background:rgba(218,75,61,.12);color:#b94735}.empty{padding:20px 0;color:var(--secondary-text-color,#6a7885);text-align:center;font-size:13px}",
 ".footer{display:flex;justify-content:space-between;gap:8px;align-items:center;margin-top:10px;font-size:10px;color:var(--secondary-text-color,#677689)}",
 ":host([data-columns='1']) .tiles{grid-template-columns:1fr}",
+"@container(max-width:650px){.tiles{grid-template-columns:1fr}}",
 "@media(max-width:640px){.tiles{grid-template-columns:1fr}.wrap{padding:12px}.tile{padding:10px}}"
 ].join("");
 class HeatingCenterCard extends HTMLElement {
